@@ -5,13 +5,11 @@ using System.Linq;
 using Assimp;
 using Assimp.Configs;
 
-
-
-
 public class MeshTest : MonoBehaviour
 {
 
     public string filetoImport;
+    public UnityEngine.Material standardmat;
     Node MasterNode;
     Node[] children;
     List<Node> allnodes = new List<Node>();
@@ -29,7 +27,7 @@ public class MeshTest : MonoBehaviour
         //Create a new importer
         importer = new AssimpImporter(); // create an importer instance
         //importer.SetConfig (new con)
-        model = importer.ImportFile(filetoImport, //import hte specified file
+        model = importer.ImportFile(filetoImport, //import the specified file
             PostProcessSteps.JoinIdenticalVertices |
             PostProcessSteps.FindInvalidData |
             PostProcessSteps.RemoveRedundantMaterials |
@@ -54,7 +52,7 @@ public class MeshTest : MonoBehaviour
 
         gameObj.name = node.Name; // rename it as the node passed
 
-        settransforms(node, gameObj);
+        settransforms(node, gameObj); // function to set the positions of the GO in the scene
 
         foreach (Node child in node.Children) // for each child object under the node passed
         {
@@ -70,41 +68,45 @@ public class MeshTest : MonoBehaviour
                 childObj.name = child.Name;
                 settransforms(child, childObj);
             }
-            if (child.HasMeshes && !child.HasChildren)
+
+            if (child.HasMeshes) // if the node has meshes under it
             {
-                
+
                 /*****************************************************************************************************************************/
-                //meshindeces = child.MeshIndices;
-                //Debug.Log ("Meshcount:" + child.MeshCount);
-                //Debug.Log ("Length of Mesh indeces: " +meshindeces.Length + "\n" + "------------------------------------");
-                //for (int i = 0; i < child.MeshCount; i ++)
+                
+                //Debug.Log("Meshcount:" + child.MeshCount);
+                //Debug.Log("Length of Mesh indeces: " + child.MeshIndices.Length + "\n" + "------------------------------------");
+                //for (int i = 0; i < child.MeshCount; i++)
                 //{
-                //    Debug.Log("index: " + meshindeces[i]);
+                //    Debug.Log("index: " + child.MeshIndices[i]);
                 //}
                 //Debug.Log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
                 /*****************************************************************************************************************************/
-                
-                for (int i = 0; i < child.MeshCount; i++)
+
+                for (int i = 0; i < child.MeshCount; i++) // iterate thru each mesh
                 {
-                    GameObject mGo = new GameObject();
-                    
+                    GameObject mGo = new GameObject(); // create a GO for each mesh
+
                     mGo.name = "MESH " + i.ToString();
+                    
+                    mGo.transform.parent = childObj.transform; // add the mesh GO under the parent node
 
-                    settransforms(child, mGo);
-
-                    mGo.transform.parent = childObj.transform;
-
+                    //settransforms(child, mGo); // set the position of this GO relative to the parent
                     /*******************************************************/
 
                     UnityEngine.Mesh mesh = new UnityEngine.Mesh();
                     mesh.name = "MESH " + i.ToString();
 
                     mGo.AddComponent<MeshRenderer>();
+                    mGo.GetComponent<MeshRenderer>().sharedMaterial = standardmat;
                     mGo.AddComponent<MeshFilter>();
-
-                    Debug.Log("vertices under Node " + child.Name + "\n" +"-------------------------------------------------------");
-                    drawmesh(child, mesh, model);
                     
+                    drawmesh(child, mesh, model);
+
+                    mGo.GetComponent<MeshFilter>().mesh = mesh;
+
+
+
                 }
             }
 
@@ -129,27 +131,27 @@ public class MeshTest : MonoBehaviour
 
     public void drawmesh(Node refnode_m, UnityEngine.Mesh themesh, Scene importedmodel)
     {
-        for (int a = 0; a < refnode_m.MeshCount; a++)
+        for (int a = 0; a < refnode_m.MeshCount; a++) // for each mesh
         {
             Vector3 verticevec_temp = new Vector3();
+            //Vector3[] tempvertices = new Vector3[importedmodel.Meshes[refnode_m.MeshIndices[a]].VertexCount];
             List<Vector3> tempvertices = new List<Vector3>();
-
-            for (int b = 0; b < importedmodel.Meshes[refnode_m.MeshIndices[a]].VertexCount; b++)
+            for (int b = 0; b < importedmodel.Meshes[refnode_m.MeshIndices[a]].VertexCount; b++) // get the vertices of the mesh
             {
                 verticevec_temp = new Vector3(importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].X,
                                                 importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].Z,
                                                 importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].Y);
-                tempvertices.Add(verticevec_temp);
-
-                //foreach (Vector3 vecs in tempvertices)
-                //{
-                //    Debug.Log("Vertices under MESH " + refnode_m.MeshIndices[a].ToString() + " of " + refnode_m.Name + " are: " );
-                //    Debug.Log(vecs);
-                //}
-
+                tempvertices.Add (verticevec_temp);
+                
             }
-            themesh.vertices = tempvertices.ToArray();
+
+            Debug.Log("Vertices under MESH " + refnode_m.MeshIndices[a].ToString() + " of " + refnode_m.Name + " are: " + importedmodel.Meshes[refnode_m.MeshIndices[a]].VertexCount);
             
+            themesh.SetVertices(tempvertices);
+            themesh.triangles = importedmodel.Meshes[refnode_m.MeshIndices[a]].GetIntIndices();
+            
+            //themesh.triangles = importedmodel.Meshes[a].GetIntIndices();
+
         }
     }
 
