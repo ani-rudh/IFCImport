@@ -139,61 +139,69 @@ public class Import_Check_Meshfix : MonoBehaviour
         {
             tempvertices = new List<Vector3>();
             List<int> meshesIndices = new List<int>();
-            
+
+            Debug.Log("-----------------------------------------------------------------------------------------------");
             
             int indice = refnode_m.MeshIndices[a];
-            Debug.Log("node mesh indices " + refnode_m.MeshIndices[a].ToString());
+
+            Debug.Log("Mesh Indice: " + refnode_m.MeshIndices[a].ToString());
+            Debug.Log("Mesh : " + importedmodel.Meshes[refnode_m.MeshIndices[a]].ToString());
 
             foreach (Assimp.Mesh mesh in importedmodel.Meshes)
             {
-                Debug.Log("indices " + mesh.GetIntIndices().Length);
-                
-                foreach (int i in mesh.GetIntIndices())
-                {
-                    foreach(int ind in refnode_m.MeshIndices)
-                    {
-                        if (ind == i)
-                        {
-                            Debug.Log("indice found " + ind);
-                            meshesIndices.AddRange(mesh.GetIntIndices());
+                Debug.Log("faces in the scene: " + mesh.GetIntIndices().Length);
 
-                            foreach (Vector3D vertice in mesh.Vertices)
-                            {
-                                Vector3 verticevec_temp = new Vector3(vertice.X,
-                                                            vertice.Y,
-                                                            vertice.Z);
-                                tempvertices.Add(verticevec_temp);
-                            }
-                        }
-                    }
-                    
-                }
+                Debug.Log("faces2 in the scene: " + mesh.FaceCount.ToString());
 
-
-                //for (int b = 0; b < importedmodel.Meshes[refnode_m.MeshIndices[a]].VertexCount; b++) // get the vertices of the mesh
+                //foreach (int i in mesh.GetIntIndices())
                 //{
-                //    Vector3 verticevec_temp = new Vector3(importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].X,
-                //                                    importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].Y,
-                //                                    importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].Z);
-                //    tempvertices.Add(verticevec_temp);
+                //    //foreach(int ind in refnode_m.MeshIndices)
+                //    //{
+                //    if (indice == i)
+                //{
+                //    Debug.Log("indice found " + indice);
+                //            meshesIndices.AddRange(mesh.GetIntIndices());
+
+                //            foreach (Vector3D vertice in mesh.Vertices)
+                //            {
+                //                Vector3 verticevec_temp = new Vector3(vertice.X,
+                //                                            vertice.Y,
+                //                                            vertice.Z);
+                //                tempvertices.Add(verticevec_temp);
+                //            }
                 //}
 
-                //Debug.Log("-----------------------------" + "\n" + "Vertices under MESH " + refnode_m.MeshIndices[a].ToString() + " of " + refnode_m.Name + " are: " + importedmodel.Meshes[refnode_m.MeshIndices[a]].VertexCount);
-                //Debug.Log("Faces under MESH " + refnode_m.MeshIndices[a].ToString() + " of " + refnode_m.Name + " are: " + importedmodel.Meshes[refnode_m.MeshIndices[a]].FaceCount + "\n" + "-----------------------------");
+
+
+            }
+
+
+            for (int b = 0; b < importedmodel.Meshes[refnode_m.MeshIndices[a]].VertexCount; b++) // get the vertices of the mesh
+            {
+                Vector3 verticevec_temp = new Vector3(importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].X,
+                                                importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].Y,
+                                                importedmodel.Meshes[refnode_m.MeshIndices[a]].Vertices[b].Z);
+                tempvertices.Add(verticevec_temp);
+            }
+
+            //Debug.Log("-----------------------------" + "\n" + "Vertices under MESH " + refnode_m.MeshIndices[a].ToString() + " of " + refnode_m.Name + " are: " + importedmodel.Meshes[refnode_m.MeshIndices[a]].VertexCount);
+            //Debug.Log("Faces under MESH " + refnode_m.MeshIndices[a].ToString() + " of " + refnode_m.Name + " are: " + importedmodel.Meshes[refnode_m.MeshIndices[a]].FaceCount + "\n" + "-----------------------------");
 
                 UnityEngine.Mesh newMesh = new UnityEngine.Mesh();
                 newMesh.SetVertices(tempvertices);
-                //newMesh.triangles = importedmodel.Meshes[refnode_m.MeshIndices[a]].GetIntIndices();
-                newMesh.triangles = meshesIndices.ToArray();
+                newMesh.triangles = importedmodel.Meshes[refnode_m.MeshIndices[a]].GetIntIndices();
+                //newMesh.triangles = meshesIndices.ToArray();
 
                 meshesArray.Add(newMesh);
             }
-        }
-
-
-
         return meshesArray;
+
+
     }
+
+
+
+
     
    
 }
